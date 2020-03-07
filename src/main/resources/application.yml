@@ -1,0 +1,39 @@
+server:
+  port: 8888
+  servlet:
+    context-path: /d2h-api
+
+spring:
+  application:
+    name: d2h-api
+  datasource:
+    username: d2h_user
+    password: d2h_user
+    url: jdbc:postgresql://localhost:5432/d2h_db
+    driver-class-name: org.postgresql.Driver
+    tomcat:
+      abandon-when-percentage-full: 60
+      max-active: 50
+      max-idle: 10
+      min-idle: 5
+      validation-query=: 1
+      test-while-idle: true
+      validation-interval: 5000
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL94Dialect
+    hibernate:
+#      ddl-auto: create-drop
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    org:
+      springframework:
+        web: debug
