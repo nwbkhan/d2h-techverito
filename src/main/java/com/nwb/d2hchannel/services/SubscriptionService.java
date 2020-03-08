@@ -9,7 +9,6 @@ import com.nwb.d2hchannel.response.UserChannelSubscriptionResponse;
 import com.nwb.d2hchannel.response.UserCurrentSubscriptions;
 import com.nwb.d2hchannel.response.UserServiceSubscriptionResponse;
 import com.nwb.d2hchannel.response.UserSubscriptionPackResponse;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -48,11 +47,11 @@ public class SubscriptionService implements ISubscriptionPack {
     @Override
     public Object getSubscriptionFor(User userByToken, SubscriptionType subscriptionType) {
         switch (subscriptionType) {
-            case CHANNEL:
+            case channel:
                 return channelSubscriptionRepositoy.findAll();
-            case PACK:
+            case pack:
                 return subscriptionPackRepository.findAll();
-            case SERVICE:
+            case service:
                 return serviceSubscriptionRepository.findAll();
             default:
                 throw new D2Exception("subscription type not found for - " + subscriptionType.name());
@@ -232,51 +231,60 @@ public class SubscriptionService implements ISubscriptionPack {
 
 
     @Override
-    public UserServiceSubscriptionResponse subscribeForService(User userByToken,
-                                                               String serviceName) {
+    public List<UserServiceSubscriptionResponse> subscribeForService(User userByToken,
+                                                                     List<String> serviceName) {
         // is already subscribed
         final boolean subscribedForService = hasAlreadySubscribeForService(userByToken, serviceName);
         if (subscribedForService) {
             throw new D2Exception("Has already subscribed for the service");
         } else {
             // subscribe For service
-            final ServiceSubscription serviceSubscriptionPack =
+            final List<ServiceSubscription> serviceSubscriptionPacks =
                     getServiceSubscriptionPack(serviceName);
-            final boolean userHasSufficientBalance =
-                    isUserHasSufficientBalance(userByToken, serviceSubscriptionPack.getPrice());
+            List<UserServiceSubscriptionResponse> userServiceSubscriptionResponses = new ArrayList<>();
+            serviceSubscriptionPacks.forEach(serviceSubscriptionPack -> {
+                final boolean userHasSufficientBalance =
+                        isUserHasSufficientBalance(userByToken, serviceSubscriptionPack.getPrice());
 
-            if (userHasSufficientBalance) {
+                if (userHasSufficientBalance) {
 
-                UserServiceSubscription userServiceSubscription = new UserServiceSubscription();
-                Calendar calendar = Calendar.getInstance();
-                calendar.add(Calendar.MONTH, 1);
-                userServiceSubscription.setExpiryDate(calendar.getTime());
-                userServiceSubscription.setService(serviceSubscriptionPack);
-                userServiceSubscription.setUser(userByToken);
-                userByToken.setBalance(userByToken.getBalance() - serviceSubscriptionPack.getPrice());
+                    UserServiceSubscription userServiceSubscription = new UserServiceSubscription();
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.add(Calendar.MONTH, 1);
+                    userServiceSubscription.setExpiryDate(calendar.getTime());
+                    userServiceSubscription.setService(serviceSubscriptionPack);
+                    userServiceSubscription.setUser(userByToken);
+                    userByToken.setBalance(userByToken.getBalance() - serviceSubscriptionPack.getPrice());
 
-                userServiceSubscriptionRepository.saveAndFlush(userServiceSubscription);
-                final User savedUser = userRepository.saveAndFlush(userByToken);
+                    userServiceSubscriptionRepository.saveAndFlush(userServiceSubscription);
+                    final User savedUser = userRepository.saveAndFlush(userByToken);
 
-                return UserServiceSubscriptionResponse
-                        .builder()
-                        .totalPrice(serviceSubscriptionPack.getPrice())
-                        .userCurrentBalance(savedUser.getBalance())
-                        .build();
-            } else {
-                throw new D2Exception("Please recharge, you don't have sufficient balance");
-            }
+                    userServiceSubscriptionResponses.add(
+                            UserServiceSubscriptionResponse
+                                    .builder()
+                                    .totalPrice(serviceSubscriptionPack.getPrice())
+                                    .userCurrentBalance(savedUser.getBalance())
+                                    .build()
+                    );
+                } else {
+                    throw new D2Exception("Please recharge, you don't have sufficient balance");
+                }
+            });
+            return userServiceSubscriptionResponses;
         }
     }
 
-    private ServiceSubscription getServiceSubscriptionPack(String serviceName) {
-        return serviceSubscriptionRepository
-                .findByServiceName(serviceName)
-                .orElseThrow(() -> new D2Exception(serviceName + " - Service not found exception"));
+    private List<ServiceSubscription> getServiceSubscriptionPack(List<String> serviceName) {
+        final List<ServiceSubscription> byServiceName = serviceSubscriptionRepository
+                .findByServiceName(serviceName);
+        if (byServiceName.size() == 0) {
+            throw new D2Exception("no service found for " + serviceName);
+        }
+        return byServiceName;
     }
 
     private boolean hasAlreadySubscribeForService(User userByToken,
-                                                  String serviceName) {
+                                                  List<String> serviceName) {
         final List<UserServiceSubscription> byServiceName =
                 userServiceSubscriptionRepository
                         .findByServiceName(serviceName,

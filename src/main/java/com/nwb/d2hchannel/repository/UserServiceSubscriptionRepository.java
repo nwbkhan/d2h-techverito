@@ -15,17 +15,17 @@ public interface UserServiceSubscriptionRepository
 
     @Query("select p " +
             "from UserServiceSubscription p " +
-            "where p.service.serviceName = (?1) " +
+            "where p.service.serviceName in (?1) " +
             "and p.user.id = (?2) " +
             "and p.expiryDate >= (?3) order by id desc")
-    List<UserServiceSubscription> findByServiceName(String serviceName,
+    List<UserServiceSubscription> findByServiceName(List<String> serviceName,
                                                     Long id,
                                                     Date expiredDate);
 
     @Query("select p " +
             "from UserServiceSubscription p " +
-            "where p.user.id = (?2) " +
-            "and p.expiryDate >= (?3)")
+            "where p.user.id = (?1) " +
+            "and p.expiryDate >= (?2)")
     List<UserServiceSubscription> findUserServiceSubscriptions(Long id,
                                                                Date date);
 

@@ -43,51 +43,51 @@ public class SubscriptionApplciationServiceController {
 
         Object subscription = subscriptionService.getSubscriptionFor(userByToken, subscriptionType);
 
-        return ResponseEntity.ok(subscription);
+        return ResponseEntity.ok(ApiResponse.of(subscription));
     }
 
 
     @PostMapping(PACK_PATH)
-    public ResponseEntity<UserSubscriptionPackResponse> subscribePacks(@RequestHeader("token") String token,
-                                                                       @Validated @RequestBody SubscriptionPackRequest subscriptionPackRequest) {
+    public ResponseEntity<ApiResponse> subscribePacks(@RequestHeader("token") String token,
+                                                      @Validated @RequestBody SubscriptionPackRequest subscriptionPackRequest) {
         final User userByToken = tokenService.getUserByToken(token);
 
         final UserSubscriptionPackResponse userChannelSubscriptionPack =
                 subscriptionService.subscribePacks(userByToken, subscriptionPackRequest);
 
-        return ResponseEntity.ok(userChannelSubscriptionPack);
+        return ResponseEntity.ok(ApiResponse.of(userChannelSubscriptionPack));
     }
 
 
     @PostMapping(CHANNEL_PATH)
-    public ResponseEntity<UserChannelSubscriptionResponse> subscribeForChannels(@RequestHeader("token") String token,
-                                                                                @RequestParam List<String> channelNames) {
+    public ResponseEntity<ApiResponse> subscribeForChannels(@RequestHeader("token") String token,
+                                                            @RequestParam List<String> channelNames) {
         final User userByToken = tokenService.getUserByToken(token);
 
         final UserChannelSubscriptionResponse userChannelSubscriptionPack =
                 subscriptionService.subscribeForChannels(userByToken, channelNames);
 
-        return ResponseEntity.ok(userChannelSubscriptionPack);
+        return ResponseEntity.ok(ApiResponse.of(userChannelSubscriptionPack));
     }
 
     @PostMapping(SERVICE_PATH)
-    public ResponseEntity<UserServiceSubscriptionResponse> subscribeForServices(@RequestHeader("token") String token,
-                                                                                @RequestParam String serviceName) {
+    public ResponseEntity<List<UserServiceSubscriptionResponse>> subscribeForServices(@RequestHeader("token") String token,
+                                                                                      @RequestParam List<String> serviceName) {
         final User userByToken = tokenService.getUserByToken(token);
 
-        final UserServiceSubscriptionResponse userChannelSubscriptionPack =
+        final List<UserServiceSubscriptionResponse> userChannelSubscriptionPack =
                 subscriptionService.subscribeForService(userByToken, serviceName);
 
         return ResponseEntity.ok(userChannelSubscriptionPack);
     }
 
     @GetMapping(CURRENT_PATH)
-    public ResponseEntity<UserCurrentSubscriptions> getCurrentUserSubscription(@RequestHeader("token") String token) {
+    public ResponseEntity<ApiResponse> getCurrentUserSubscription(@RequestHeader("token") String token) {
         final User userByToken = tokenService.getUserByToken(token);
 
         final UserCurrentSubscriptions userChannelSubscriptionPack =
                 subscriptionService.getCurrentUserSubsSubscriptions(userByToken);
 
-        return ResponseEntity.ok(userChannelSubscriptionPack);
+        return ResponseEntity.ok(ApiResponse.of(userChannelSubscriptionPack));
     }
 }

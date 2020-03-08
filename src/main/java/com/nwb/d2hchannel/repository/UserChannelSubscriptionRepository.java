@@ -21,8 +21,8 @@ public interface UserChannelSubscriptionRepository
 
     @Query("select p " +
             "from UserChannelSubscription p " +
-            "where p.user.id = (?2) " +
-            "and p.expiryDate >= (?3)")
+            "where p.user.id = (?1) " +
+            "and p.expiryDate >= (?2)")
     List<UserChannelSubscription> findChannelSubscription(Long id,
                                                           Date expiryDate);
 }

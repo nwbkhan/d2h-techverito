@@ -1,5 +1,6 @@
 package com.nwb.d2hchannel.api;
 
+import com.nwb.d2hchannel.ApiResponse;
 import com.nwb.d2hchannel.PathConstants;
 import com.nwb.d2hchannel.request.LoginRequest;
 import com.nwb.d2hchannel.request.SignupRequest;
@@ -19,20 +20,21 @@ public class AuthApplicationServiceController {
     }
 
     @PostMapping(value = PathConstants.LOGIN_PATH)
-    public ResponseEntity<String> login(@Validated @RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok(authService.makeLogin(loginRequest));
+    public ResponseEntity<ApiResponse> login(@Validated @RequestBody LoginRequest loginRequest) {
+        final String body = authService.makeLogin(loginRequest);
+        return ResponseEntity.ok(ApiResponse.of(body));
     }
 
 
     @PostMapping(value = PathConstants.SIGNUP_PATH)
     public ResponseEntity<Object> signup(@Validated @RequestBody SignupRequest signupRequest) {
         authService.makeSignup(signupRequest);
-        return ResponseEntity.ok("User has been created, please login now");
+        return ResponseEntity.ok(ApiResponse.of("User has been created, please login now"));
     }
 
     @PostMapping(value = PathConstants.LOGOUT_PATH)
     public ResponseEntity<Object> logout(@RequestHeader("token") String token) {
         authService.removeToken(token);
-        return ResponseEntity.ok("logout - OK");
+        return ResponseEntity.ok(ApiResponse.of("logout - OK"));
     }
 }

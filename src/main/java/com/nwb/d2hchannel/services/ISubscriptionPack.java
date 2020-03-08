@@ -18,6 +18,6 @@ public interface ISubscriptionPack {
     UserChannelSubscriptionResponse subscribeForChannels(User userByToken,
                                                          List<String> channelNames);
 
-    UserServiceSubscriptionResponse subscribeForService(User userByToken,
-                                                        String serviceName);
+    List<UserServiceSubscriptionResponse> subscribeForService(User userByToken,
+                                                              List<String> serviceName);
 }
