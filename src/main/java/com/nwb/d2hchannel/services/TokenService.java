@@ -15,6 +15,7 @@ public class TokenService {
     }
 
     public User getUserByToken(String token) {
+
         final UserToken userToken =
                 tokenRepository.findByToken(token)
                         .orElseThrow(() -> new TokenNotFondException("token not found"));
